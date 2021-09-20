@@ -22,6 +22,8 @@ data:
         soveren:
           replicate:
             topic: events
+            alivetopic: alive
+            workerpoolsize: 10
             brokers:
               - kafka:9092
 
@@ -30,4 +32,4 @@ data:
         upstream:
           loadBalancer:
             servers:
-              - url: http://host:80/
+              - url: http://client:80/

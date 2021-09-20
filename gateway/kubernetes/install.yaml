@@ -108,7 +108,7 @@ spec:
         app: detection-tool
     spec:
       containers:
-      - image: soveren/detection-tool:v0.1.0-beta
+      - image: soveren/detection-tool:v0.2.0
         imagePullPolicy: IfNotPresent
         name: detection-tool
         ports:
@@ -169,17 +169,23 @@ spec:
           value: http://detection-tool:8000/api/v1/request
         - name: SVRN_DIGGER_KAFKA_BROKERS
           value: kafka:9092
-        - name: SVRN_DIGGER_KAFKA_CONSUMERGROUP
+        - name: SVRN_DIGGER_KAFKA_CONSUMER_GROUP
           value: worker_1
-        - name: SVRN_DIGGER_KAFKA_HANDLERNAME
+        - name: SVRN_DIGGER_KAFKA_CONSUMER_HANDLERNAME
           value: worker_1
-        - name: SVRN_DIGGER_KAFKA_TOPIC
+        - name: SVRN_DIGGER_KAFKA_CONSUMER_TOPIC
           value: events
+        - name: SVRN_DIGGER_KAFKA_CONSUMERALIVE_GROUP
+          value: worker_2
+        - name: SVRN_DIGGER_KAFKA_CONSUMERALIVE_HANDLERNAME
+          value: worker_2
+        - name: SVRN_DIGGER_KAFKA_CONSUMERALIVE_TOPIC
+          value: alive
         - name: SVRN_DIGGER_KAFKA_RESENDSLEEP
           value: 1s
         - name: SVRN_DIGGER_INSTRUMENTATION_LISTENADDRESS
           value: 0.0.0.0:9000
-        image: soveren/digger:v0.1.0-beta
+        image: soveren/digger:v0.3.1
         imagePullPolicy: IfNotPresent
         name: digger
         ports:
@@ -276,10 +282,10 @@ spec:
           timeoutSeconds: 2
         resources:
           limits:
-            memory: 120Mi
+            memory: 2G
           requests:
             cpu: 10m
-            memory: 100Mi
+            memory: 2G
         volumeMounts:
         - mountPath: /bitnami
           name: zookeeper-data
@@ -314,7 +320,7 @@ spec:
       - args:
         - traefik
         - --configfile=/etc/traefik/conf/config.yaml
-        image: soveren/gateway:v0.1.0-beta
+        image: soveren/gateway:v0.3.0
         imagePullPolicy: IfNotPresent
         name: traefik-proxy
         ports:
