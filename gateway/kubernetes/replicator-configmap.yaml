@@ -7,7 +7,6 @@ metadata:
 data:
   replicator.yaml: |
     http:
-      # Add the router
       routers:
         defaults:
           entryPoints:
@@ -16,16 +15,6 @@ data:
           middlewares:
             - soveren
           service: upstream
-
-      # Add the middleware
-      middlewares:
-        soveren:
-          replicate:
-            topic: events
-            brokers:
-              - kafka:9092
-
-      # Add the service
       services:
         upstream:
           loadBalancer:
