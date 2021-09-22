@@ -1,0 +1,6 @@
+http:
+  services:
+    upstream:
+      loadBalancer:
+        servers:
+          - url: http://host:1323/

@@ -1,32 +1,20 @@
 apiVersion: v1
 data:
-  config.yaml: |
-    api:
-      dashboard: true
-      insecure: true
-    providers:
-      file:
-        directory: /etc/traefik/conf/conf.d/
-        watch: true
-
-    entryPoints:
-      web:
-        address: ":8090"
-      metrics:
-        address: ":9090"
-    log:
-      format: common
-
-    accessLog:
-      format: common
-
-    metrics:
-      prometheus:
-        entryPoint: metrics
-        addServicesLabels: true
+  middlewares.yaml: |
+    http:
+      middlewares:
+        soveren:
+          replicate:
+            topic: events
+            alivetopic: alive
+            workerpoolsize: 10
+            brokers:
+              - kafka:9092
 kind: ConfigMap
 metadata:
-  name: traefik
+  labels:
+    app: traefik-proxy
+  name: middlewares
 ---
 apiVersion: v1
 kind: Service
@@ -108,7 +96,7 @@ spec:
         app: detection-tool
     spec:
       containers:
-      - image: soveren/detection-tool:v0.1.0-beta
+      - image: soveren/detection-tool:v0.2.0
         imagePullPolicy: IfNotPresent
         name: detection-tool
         ports:
@@ -169,17 +157,23 @@ spec:
           value: http://detection-tool:8000/api/v1/request
         - name: SVRN_DIGGER_KAFKA_BROKERS
           value: kafka:9092
-        - name: SVRN_DIGGER_KAFKA_CONSUMERGROUP
+        - name: SVRN_DIGGER_KAFKA_CONSUMER_GROUP
           value: worker_1
-        - name: SVRN_DIGGER_KAFKA_HANDLERNAME
+        - name: SVRN_DIGGER_KAFKA_CONSUMER_HANDLERNAME
           value: worker_1
-        - name: SVRN_DIGGER_KAFKA_TOPIC
+        - name: SVRN_DIGGER_KAFKA_CONSUMER_TOPIC
           value: events
+        - name: SVRN_DIGGER_KAFKA_CONSUMERALIVE_GROUP
+          value: worker_2
+        - name: SVRN_DIGGER_KAFKA_CONSUMERALIVE_HANDLERNAME
+          value: worker_2
+        - name: SVRN_DIGGER_KAFKA_CONSUMERALIVE_TOPIC
+          value: alive
         - name: SVRN_DIGGER_KAFKA_RESENDSLEEP
           value: 1s
         - name: SVRN_DIGGER_INSTRUMENTATION_LISTENADDRESS
           value: 0.0.0.0:9000
-        image: soveren/digger:v0.1.0-beta
+        image: soveren/digger:v0.3.1
         imagePullPolicy: IfNotPresent
         name: digger
         ports:
@@ -276,10 +270,10 @@ spec:
           timeoutSeconds: 2
         resources:
           limits:
-            memory: 120Mi
+            memory: 2G
           requests:
             cpu: 10m
-            memory: 100Mi
+            memory: 2G
         volumeMounts:
         - mountPath: /bitnami
           name: zookeeper-data
@@ -311,10 +305,14 @@ spec:
         app: traefik-proxy
     spec:
       containers:
-      - args:
-        - traefik
-        - --configfile=/etc/traefik/conf/config.yaml
-        image: soveren/gateway:v0.1.0-beta
+      - env:
+        - name: TRAEFIK_LOG_LEVEL
+          value: INFO
+        - name: TRAEFIK_ENTRYPOINTS_WEB_ADDRESS
+          value: :8090
+        - name: TRAEFIK_PROVIDERS_FILE_DIRECTORY
+          value: /etc/traefik/conf/conf.d/
+        image: soveren/gateway:v0.3.0
         imagePullPolicy: IfNotPresent
         name: traefik-proxy
         ports:
@@ -334,10 +332,12 @@ spec:
             cpu: 50m
             memory: 64Mi
         volumeMounts:
-        - mountPath: /etc/traefik/conf/
-          name: traefik-config
-        - mountPath: /etc/traefik/conf/conf.d/
+        - mountPath: /etc/traefik/conf/conf.d/replicator.yaml
           name: replicator
+          subPath: replicator.yaml
+        - mountPath: /etc/traefik/conf/conf.d/middlewares.yaml
+          name: middlewares
+          subPath: middlewares.yaml
       initContainers:
       - args:
         - -c
@@ -347,8 +347,8 @@ spec:
       restartPolicy: Always
       volumes:
       - configMap:
-          name: traefik
-        name: traefik-config
+          name: middlewares
+        name: middlewares
       - configMap:
           name: replicator
         name: replicator
