@@ -6,17 +6,18 @@ services:
       presidio-analyzer:
         condition: service_healthy
     environment:
+      SVRN_DIGGER_LOG_LEVEL: info
       SVRN_DIGGER_PRESIDIO_ANALYZERURI: http://presidio-analyzer:8000/api/v1/request
       SVRN_DIGGER_STATSCLIENT_CLIENT_ADDRESS: stats.soveren.io:443
       SVRN_DIGGER_STATSCLIENT_CLIENT_TIMEOUT: 60s
       SVRN_DIGGER_STATSCLIENT_CLIENT_USETLS: "true"
-      SVRN_DIGGER_STATSCLIENT_TOKEN: ''
+      SVRN_DIGGER_STATSCLIENT_TOKEN: '${token}'
     expose:
-    - '9000'
+      - '9000'
     healthcheck:
       interval: 5s
       test: bash -c '</dev/tcp/localhost/9000' 2>/dev/null
-    image: soveren/digger:v0.3.1
+    image: soveren/digger:v0.4.0
   kafka:
     depends_on:
       zookeeper:
@@ -25,20 +26,20 @@ services:
       ALLOW_PLAINTEXT_LISTENER: "yes"
       KAFKA_CFG_ZOOKEEPER_CONNECT: zookeeper:2181
     expose:
-    - '9092'
+      - '9092'
     healthcheck:
       interval: 5s
       test: bash -c '</dev/tcp/localhost/9092' 2>/dev/null
     image: bitnami/kafka:2
     volumes:
-    - kafka_data:/bitnami:rw
+      - kafka_data:/bitnami:rw
   presidio-analyzer:
     expose:
-    - '8000'
+      - '8000'
     healthcheck:
       interval: 5s
       test: bash -c '</dev/tcp/localhost/8000' 2>/dev/null
-    image: soveren/detection-tool:v0.2.0
+    image: soveren/detection-tool:v0.3.0
   traefik:
     depends_on:
       kafka:
@@ -50,27 +51,26 @@ services:
     healthcheck:
       interval: 5s
       test: nc -w 1 -z localhost 8090
-    image: soveren/gateway:v0.3.0
+    image: soveren/gateway:v0.4.0
     ports:
-    - published: 8090
-      target: 8090
+      - published: 8090
+        target: 8090
     volumes:
-    - ./configs/traefik_configs:/etc/traefik/conf:rw
+      - ./configs/traefik_configs:/etc/traefik/conf:rw
   zookeeper:
     environment:
       ALLOW_ANONYMOUS_LOGIN: "yes"
     expose:
-    - '2181'
+      - '2181'
     healthcheck:
       interval: 5s
       test: nc -w 1 -z localhost 2181
     image: bitnami/zookeeper:3.7
     volumes:
-    - zookeeper_data:/bitnami:rw
+      - zookeeper_data:/bitnami:rw
 version: '3'
 volumes:
   kafka_data:
     driver: local
   zookeeper_data:
     driver: local
-
