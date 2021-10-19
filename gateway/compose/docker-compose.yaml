@@ -1,13 +1,23 @@
 services:
+  detection-tool:
+    expose:
+      - '8000'
+    healthcheck:
+      interval: 5s
+      test: bash -c '</dev/tcp/localhost/8000' 2>/dev/null
+    image: soveren/detection-tool:v0.6.0
   digger:
     depends_on:
+      detection-tool:
+        condition: service_healthy
       kafka:
         condition: service_healthy
-      presidio-analyzer:
-        condition: service_healthy
     environment:
+      SVRN_DIGGER_DETECTIONTOOL_URI: http://detection-tool:8000/api/v2/detect
+      SVRN_DIGGER_INSTRUMENTATION_TRACING_AGENTENDPOINT: ''
+      SVRN_DIGGER_INSTRUMENTATION_TRACING_COLLECTORENDPOINT: ''
+      SVRN_DIGGER_INSTRUMENTATION_TRACING_PROBABILITYRATE: '0'
       SVRN_DIGGER_LOG_LEVEL: info
-      SVRN_DIGGER_PRESIDIO_ANALYZERURI: http://presidio-analyzer:8000/api/v1/request
       SVRN_DIGGER_STATSCLIENT_CLIENT_ADDRESS: stats.soveren.io:443
       SVRN_DIGGER_STATSCLIENT_CLIENT_TIMEOUT: 60s
       SVRN_DIGGER_STATSCLIENT_CLIENT_USETLS: "true"
@@ -17,29 +27,25 @@ services:
     healthcheck:
       interval: 5s
       test: bash -c '</dev/tcp/localhost/9000' 2>/dev/null
-    image: soveren/digger:v0.4.0
+    image: soveren/digger:v0.5.0
   kafka:
-    depends_on:
-      zookeeper:
-        condition: service_healthy
+    command:
+      - --override
+      - advertised.listeners=PLAINTEXT://kafka:9092
+      - --override
+      - log.retention.hours=1
+      - --override
+      - log.retention.bytes=268435456
+      - --override
+      - auto.create.topics.enable=false
     environment:
-      ALLOW_PLAINTEXT_LISTENER: "yes"
-      KAFKA_CFG_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_CREATE_TOPICS: alive:1:1,events:10:1
     expose:
       - '9092'
     healthcheck:
       interval: 5s
-      test: bash -c '</dev/tcp/localhost/9092' 2>/dev/null
-    image: bitnami/kafka:2
-    volumes:
-      - kafka_data:/bitnami:rw
-  presidio-analyzer:
-    expose:
-      - '8000'
-    healthcheck:
-      interval: 5s
-      test: bash -c '</dev/tcp/localhost/8000' 2>/dev/null
-    image: soveren/detection-tool:v0.3.0
+      test: bash -c '</dev/tcp/kafka/9092' 2>/dev/null
+    image: soveren/kafka:kraft
   traefik:
     depends_on:
       kafka:
@@ -51,23 +57,12 @@ services:
     healthcheck:
       interval: 5s
       test: nc -w 1 -z localhost 8090
-    image: soveren/gateway:v0.4.0
+    image: soveren/gateway:v2.4.12-svrn0.5.0
     ports:
       - published: 8090
         target: 8090
     volumes:
       - ./configs/traefik_configs:/etc/traefik/conf:rw
-  zookeeper:
-    environment:
-      ALLOW_ANONYMOUS_LOGIN: "yes"
-    expose:
-      - '2181'
-    healthcheck:
-      interval: 5s
-      test: nc -w 1 -z localhost 2181
-    image: bitnami/zookeeper:3.7
-    volumes:
-      - zookeeper_data:/bitnami:rw
 version: '3'
 volumes:
   kafka_data:

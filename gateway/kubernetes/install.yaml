@@ -59,9 +59,6 @@ spec:
   - name: kafka-tcp
     port: 9092
     targetPort: 9092
-  - name: zookeeper-tcp
-    port: 2181
-    targetPort: 2181
   selector:
     app: kafka
 ---
@@ -96,7 +93,7 @@ spec:
         app: detection-tool
     spec:
       containers:
-      - image: soveren/detection-tool:v0.3.0
+      - image: soveren/detection-tool:v0.6.0
         imagePullPolicy: IfNotPresent
         name: detection-tool
         ports:
@@ -108,7 +105,7 @@ spec:
           timeoutSeconds: 3
         resources:
           limits:
-            cpu: 500m
+            cpu: 2000m
             memory: 2048Mi
           requests:
             cpu: 250m
@@ -153,8 +150,8 @@ spec:
           value: 60s
         - name: SVRN_DIGGER_LOG_FORMATTER
           value: text
-        - name: SVRN_DIGGER_PRESIDIO_ANALYZERURI
-          value: http://detection-tool:8000/api/v1/request
+        - name: SVRN_DIGGER_DETECTIONTOOL_URI
+          value: http://detection-tool:8000/api/v2/detect
         - name: SVRN_DIGGER_KAFKA_BROKERS
           value: kafka:9092
         - name: SVRN_DIGGER_KAFKA_CONSUMER_GROUP
@@ -171,9 +168,15 @@ spec:
           value: alive
         - name: SVRN_DIGGER_KAFKA_RESENDSLEEP
           value: 1s
-        - name: SVRN_DIGGER_INSTRUMENTATION_LISTENADDRESS
+        - name: SVRN_DIGGER_INSTRUMENTATION_SERVER_LISTENADDRESS
           value: 0.0.0.0:9000
-        image: soveren/digger:v0.4.0
+        - name: SVRN_DIGGER_INSTRUMENTATION_TRACING_AGENTENDPOINT
+          value: ""
+        - name: SVRN_DIGGER_INSTRUMENTATION_TRACING_COLLECTORENDPOINT
+          value: ""
+        - name: SVRN_DIGGER_INSTRUMENTATION_TRACING_PROBABILITYRATE
+          value: "0"
+        image: soveren/digger:v0.5.0
         imagePullPolicy: IfNotPresent
         name: digger
         ports:
@@ -223,18 +226,23 @@ spec:
         app: kafka
     spec:
       containers:
-      - env:
-        - name: ALLOW_PLAINTEXT_LISTENER
-          value: "yes"
-        - name: KAFKA_CFG_ZOOKEEPER_CONNECT
-          value: kafka:2181
+      - args:
+        - --override
+        - advertised.listeners=PLAINTEXT://$(MY_POD_IP):9092
+        - --override
+        - log.retention.hours=1
+        - --override
+        - log.retention.bytes=268435456
+        - --override
+        - auto.create.topics.enable=false
+        env:
+        - name: KAFKA_CREATE_TOPICS
+          value: alive:1:1,events:10:1
         - name: MY_POD_IP
           valueFrom:
             fieldRef:
               fieldPath: status.podIP
-        - name: KAFKA_ADVERTISED_LISTENERS
-          value: PLAINTEXT://$(MY_POD_IP):9092
-        image: docker.io/bitnami/kafka:2
+        image: soveren/kafka:kraft
         imagePullPolicy: Always
         lifecycle:
           preStop:
@@ -248,42 +256,11 @@ spec:
         - containerPort: 9092
         resources:
           limits:
-            memory: 600Mi
+            memory: 1024Mi
           requests:
             cpu: 100m
             memory: 100Mi
-        volumeMounts:
-        - mountPath: /bitnami
-          name: kafka-data
-      - env:
-        - name: ALLOW_ANONYMOUS_LOGIN
-          value: "yes"
-        image: docker.io/bitnami/zookeeper:3.7
-        imagePullPolicy: Always
-        name: zookeeper
-        ports:
-        - containerPort: 2181
-        readinessProbe:
-          periodSeconds: 30
-          tcpSocket:
-            port: 2181
-          timeoutSeconds: 2
-        resources:
-          limits:
-            memory: 2G
-          requests:
-            cpu: 10m
-            memory: 2G
-        volumeMounts:
-        - mountPath: /bitnami
-          name: zookeeper-data
-      restartPolicy: Always
       terminationGracePeriodSeconds: 30
-      volumes:
-      - emptyDir: {}
-        name: kafka-data
-      - emptyDir: {}
-        name: zookeeper-data
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -312,7 +289,7 @@ spec:
           value: :8090
         - name: TRAEFIK_PROVIDERS_FILE_DIRECTORY
           value: /etc/traefik/conf/conf.d/
-        image: soveren/gateway:v0.4.0
+        image: soveren/gateway:v2.4.12-svrn0.5.0
         imagePullPolicy: IfNotPresent
         name: traefik-proxy
         ports:
@@ -332,12 +309,10 @@ spec:
             cpu: 50m
             memory: 64Mi
         volumeMounts:
-        - mountPath: /etc/traefik/conf/conf.d/replicator.yaml
+        - mountPath: /etc/traefik/conf/conf.d/
           name: replicator
-          subPath: replicator.yaml
-        - mountPath: /etc/traefik/conf/conf.d/middlewares.yaml
+        - mountPath: /etc/traefik/conf/conf.d/middlewares/
           name: middlewares
-          subPath: middlewares.yaml
       initContainers:
       - args:
         - -c
