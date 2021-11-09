@@ -6,7 +6,7 @@ data:
         soveren:
           replicate:
             topic: events
-            alivetopic: alive
+            heartbeattopic: heartbeat
             workerpoolsize: 10
             brokers:
               - kafka:9092
@@ -93,7 +93,7 @@ spec:
         app: detection-tool
     spec:
       containers:
-      - image: soveren/detection-tool:v0.6.0
+      - image: soveren/detection-tool:v0.6.2
         imagePullPolicy: IfNotPresent
         name: detection-tool
         ports:
@@ -125,9 +125,6 @@ spec:
       app: digger
   template:
     metadata:
-      annotations:
-        prometheus.io/port: "9090"
-        prometheus.io/scrape: "true"
       labels:
         app: digger
     spec:
@@ -160,12 +157,12 @@ spec:
           value: worker_1
         - name: SVRN_DIGGER_KAFKA_CONSUMER_TOPIC
           value: events
-        - name: SVRN_DIGGER_KAFKA_CONSUMERALIVE_GROUP
+        - name: SVRN_DIGGER_KAFKA_CONSUMERHEARTBEAT_GROUP
           value: worker_2
-        - name: SVRN_DIGGER_KAFKA_CONSUMERALIVE_HANDLERNAME
+        - name: SVRN_DIGGER_KAFKA_CONSUMERHEARTBEAT_HANDLERNAME
           value: worker_2
-        - name: SVRN_DIGGER_KAFKA_CONSUMERALIVE_TOPIC
-          value: alive
+        - name: SVRN_DIGGER_KAFKA_CONSUMERHEARTBEAT_TOPIC
+          value: heartbeat
         - name: SVRN_DIGGER_KAFKA_RESENDSLEEP
           value: 1s
         - name: SVRN_DIGGER_INSTRUMENTATION_SERVER_LISTENADDRESS
@@ -237,7 +234,7 @@ spec:
         - auto.create.topics.enable=false
         env:
         - name: KAFKA_CREATE_TOPICS
-          value: alive:1:1,events:10:1
+          value: heartbeat:1:1,events:10:1
         - name: MY_POD_IP
           valueFrom:
             fieldRef:
@@ -275,9 +272,6 @@ spec:
       app: traefik-proxy
   template:
     metadata:
-      annotations:
-        prometheus.io/port: "9090"
-        prometheus.io/scrape: "true"
       labels:
         app: traefik-proxy
     spec:

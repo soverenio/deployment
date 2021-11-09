@@ -5,7 +5,7 @@ services:
     healthcheck:
       interval: 5s
       test: bash -c '</dev/tcp/localhost/8000' 2>/dev/null
-    image: soveren/detection-tool:v0.6.0
+    image: soveren/detection-tool:v0.6.2
   digger:
     depends_on:
       detection-tool:
@@ -39,7 +39,7 @@ services:
       - --override
       - auto.create.topics.enable=false
     environment:
-      KAFKA_CREATE_TOPICS: alive:1:1,events:10:1
+      KAFKA_CREATE_TOPICS: heartbeat:1:1,events:10:1
     expose:
       - '9092'
     healthcheck:
