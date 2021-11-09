@@ -125,9 +125,6 @@ spec:
       app: digger
   template:
     metadata:
-      annotations:
-        prometheus.io/port: "9090"
-        prometheus.io/scrape: "true"
       labels:
         app: digger
     spec:
@@ -275,9 +272,6 @@ spec:
       app: traefik-proxy
   template:
     metadata:
-      annotations:
-        prometheus.io/port: "9090"
-        prometheus.io/scrape: "true"
       labels:
         app: traefik-proxy
     spec:
