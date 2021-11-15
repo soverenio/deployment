@@ -5,7 +5,7 @@ services:
     healthcheck:
       interval: 5s
       test: bash -c '</dev/tcp/localhost/8000' 2>/dev/null
-    image: soveren/detection-tool:v0.6.0
+    image: soveren/detection-tool:v0.6.2
   digger:
     depends_on:
       detection-tool:
@@ -27,7 +27,7 @@ services:
     healthcheck:
       interval: 5s
       test: bash -c '</dev/tcp/localhost/9000' 2>/dev/null
-    image: soveren/digger:v0.5.0
+    image: soveren/digger:v0.6.0
   kafka:
     command:
       - --override
@@ -39,7 +39,7 @@ services:
       - --override
       - auto.create.topics.enable=false
     environment:
-      KAFKA_CREATE_TOPICS: alive:1:1,events:10:1
+      KAFKA_CREATE_TOPICS: heartbeat:1:1,events:10:1
     expose:
       - '9092'
     healthcheck:
@@ -57,7 +57,7 @@ services:
     healthcheck:
       interval: 5s
       test: nc -w 1 -z localhost 8090
-    image: soveren/gateway:v2.4.12-svrn0.5.0
+    image: soveren/gateway:v2.4.12-svrn0.6.0
     ports:
       - published: 8090
         target: 8090
