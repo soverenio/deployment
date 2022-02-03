@@ -5,7 +5,7 @@ services:
     healthcheck:
       interval: 5s
       test: bash -c '</dev/tcp/localhost/8000' 2>/dev/null
-    image: soveren/detection-tool:v0.8.5
+    image: soveren/detection-tool:v0.8.6
   digger:
     depends_on:
       detection-tool:
@@ -13,7 +13,7 @@ services:
       kafka:
         condition: service_healthy
     environment:
-      SVRN_DIGGER_DETECTIONTOOL_URI: http://detection-tool:8000/api/v2/detect
+      SVRN_DIGGER_DETECTIONTOOL_URI: http://detection-tool:8000
       SVRN_DIGGER_INSTRUMENTATION_TRACING_AGENTENDPOINT: ''
       SVRN_DIGGER_INSTRUMENTATION_TRACING_COLLECTORENDPOINT: ''
       SVRN_DIGGER_INSTRUMENTATION_TRACING_PROBABILITYRATE: '0'
@@ -27,7 +27,7 @@ services:
     healthcheck:
       interval: 5s
       test: bash -c '</dev/tcp/localhost/9000' 2>/dev/null
-    image: soveren/digger:v0.8.1
+    image: soveren/digger:v0.9.0
   kafka:
     command:
       - --override
@@ -57,7 +57,7 @@ services:
     healthcheck:
       interval: 5s
       test: nc -w 1 -z localhost 8090
-    image: soveren/gateway:v2.4.12-svrn0.8.2
+    image: soveren/gateway:v2.4.12-svrn0.9.0
     ports:
       - published: 8090
         target: 8090

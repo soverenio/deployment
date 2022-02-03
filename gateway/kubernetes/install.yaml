@@ -93,7 +93,7 @@ spec:
         app: detection-tool
     spec:
       containers:
-      - image: soveren/detection-tool:v0.8.5
+      - image: soveren/detection-tool:v0.8.6
         imagePullPolicy: IfNotPresent
         name: detection-tool
         ports:
@@ -148,7 +148,7 @@ spec:
         - name: SVRN_DIGGER_LOG_FORMATTER
           value: text
         - name: SVRN_DIGGER_DETECTIONTOOL_URI
-          value: http://detection-tool:8000/api/v2/detect
+          value: http://detection-tool:8000
         - name: SVRN_DIGGER_KAFKA_BROKERS
           value: kafka:9092
         - name: SVRN_DIGGER_KAFKA_CONSUMER_GROUP
@@ -173,7 +173,7 @@ spec:
           value: ""
         - name: SVRN_DIGGER_INSTRUMENTATION_TRACING_PROBABILITYRATE
           value: "0"
-        image: soveren/digger:v0.8.1
+        image: soveren/digger:v0.9.0
         imagePullPolicy: IfNotPresent
         name: digger
         ports:
@@ -283,7 +283,7 @@ spec:
           value: :8090
         - name: TRAEFIK_PROVIDERS_FILE_DIRECTORY
           value: /etc/traefik/conf/conf.d/
-        image: soveren/gateway:v2.4.12-svrn0.8.2
+        image: soveren/gateway:v2.4.12-svrn0.9.0
         imagePullPolicy: IfNotPresent
         name: traefik-proxy
         ports:
