@@ -93,7 +93,7 @@ spec:
         app: detection-tool
     spec:
       containers:
-      - image: soveren/detection-tool:v0.9.1
+      - image: soveren/detection-tool:v0.10.1
         imagePullPolicy: IfNotPresent
         name: detection-tool
         ports:
