@@ -9,19 +9,21 @@ data:
             heartbeattopic: heartbeat
             workerpoolsize: 10
             brokers:
-              - kafka:9092
+              - soveren-kafka:9092
 kind: ConfigMap
 metadata:
   labels:
     app: traefik-proxy
-  name: middlewares
+    stack: soveren
+  name: soveren-middlewares
 ---
 apiVersion: v1
 kind: Service
 metadata:
   labels:
     app: detection-tool
-  name: detection-tool
+    stack: soveren
+  name: soveren-detection-tool
 spec:
   ports:
   - name: detection-tcp
@@ -29,13 +31,15 @@ spec:
     targetPort: 8000
   selector:
     app: detection-tool
+    stack: soveren
 ---
 apiVersion: v1
 kind: Service
 metadata:
   labels:
     app: digger
-  name: digger
+    stack: soveren
+  name: soveren-digger
 spec:
   ports:
   - name: digger-tcp
@@ -46,13 +50,15 @@ spec:
     targetPort: 9090
   selector:
     app: digger
+    stack: soveren
 ---
 apiVersion: v1
 kind: Service
 metadata:
   labels:
     app: kafka
-  name: kafka
+    stack: soveren
+  name: soveren-kafka
 spec:
   clusterIP: None
   ports:
@@ -61,13 +67,15 @@ spec:
     targetPort: 9092
   selector:
     app: kafka
+    stack: soveren
 ---
 apiVersion: v1
 kind: Service
 metadata:
   labels:
     app: traefik-proxy
-  name: traefik-proxy
+    stack: soveren
+  name: soveren-traefik-proxy
 spec:
   ports:
   - name: traefik-proxy
@@ -75,22 +83,26 @@ spec:
     targetPort: 8090
   selector:
     app: traefik-proxy
+    stack: soveren
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
     app: detection-tool
-  name: detection-tool
+    stack: soveren
+  name: soveren-detection-tool
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: detection-tool
+      stack: soveren
   template:
     metadata:
       labels:
         app: detection-tool
+        stack: soveren
     spec:
       containers:
       - image: soveren/detection-tool:v0.10.1
@@ -117,16 +129,19 @@ kind: Deployment
 metadata:
   labels:
     app: digger
-  name: digger
+    stack: soveren
+  name: soveren-digger
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: digger
+      stack: soveren
   template:
     metadata:
       labels:
         app: digger
+        stack: soveren
     spec:
       containers:
       - env:
@@ -148,9 +163,9 @@ spec:
         - name: SVRN_DIGGER_LOG_FORMATTER
           value: text
         - name: SVRN_DIGGER_DETECTIONTOOL_URI
-          value: http://detection-tool:8000
+          value: http://soveren-detection-tool:8000
         - name: SVRN_DIGGER_KAFKA_BROKERS
-          value: kafka:9092
+          value: soveren-kafka:9092
         - name: SVRN_DIGGER_KAFKA_CONSUMER_GROUP
           value: worker_1
         - name: SVRN_DIGGER_KAFKA_CONSUMER_HANDLERNAME
@@ -173,7 +188,9 @@ spec:
           value: ""
         - name: SVRN_DIGGER_INSTRUMENTATION_TRACING_PROBABILITYRATE
           value: "0"
-        image: soveren/digger:v0.9.4
+        - name: SVRN_DIGGER_RESOLVER_KUBERNETES_ENABLED
+          value: "true"
+        image: soveren/digger:v0.10.0
         imagePullPolicy: IfNotPresent
         name: digger
         ports:
@@ -195,32 +212,37 @@ spec:
       initContainers:
       - args:
         - -c
-        - for attempt in {1..60}; do sleep 2; nc -zvw5 kafka 9092 && break; done
+        - for attempt in {1..60}; do sleep 2; nc -zvw5 soveren-kafka 9092 && break;
+          done
         image: bash:5.1.4
         name: check-kafka-ready
       - args:
         - -c
-        - for attempt in {1..60}; do sleep 2; nc -zvw5 detection-tool 8000 && break;
-          done
+        - for attempt in {1..60}; do sleep 2; nc -zvw5 soveren-detection-tool 8000
+          && break; done
         image: bash:5.1.4
         name: check-detection-ready
       restartPolicy: Always
+      serviceAccountName: soveren-digger
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
     app: kafka
-  name: kafka
+    stack: soveren
+  name: soveren-kafka
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: kafka
+      stack: soveren
   template:
     metadata:
       labels:
         app: kafka
+        stack: soveren
     spec:
       containers:
       - args:
@@ -264,16 +286,19 @@ kind: Deployment
 metadata:
   labels:
     app: traefik-proxy
-  name: traefik-proxy
+    stack: soveren
+  name: soveren-traefik-proxy
 spec:
   replicas: 3
   selector:
     matchLabels:
       app: traefik-proxy
+      stack: soveren
   template:
     metadata:
       labels:
         app: traefik-proxy
+        stack: soveren
     spec:
       containers:
       - env:
@@ -283,7 +308,7 @@ spec:
           value: :8090
         - name: TRAEFIK_PROVIDERS_FILE_DIRECTORY
           value: /etc/traefik/conf/conf.d/
-        image: soveren/gateway:v2.6.0-svrn0.9.1
+        image: soveren/gateway:v2.6.0-svrn0.9.2
         imagePullPolicy: IfNotPresent
         name: traefik-proxy
         ports:
@@ -310,14 +335,15 @@ spec:
       initContainers:
       - args:
         - -c
-        - for attempt in {1..60}; do sleep 2; nc -zvw5 kafka 9092 && break; done
+        - for attempt in {1..60}; do sleep 2; nc -zvw5 soveren-kafka 9092 && break;
+          done
         image: bash:5.1.4
         name: check-kafka-ready
       restartPolicy: Always
       volumes:
       - configMap:
-          name: middlewares
+          name: soveren-middlewares
         name: middlewares
       - configMap:
-          name: replicator
+          name: soveren-replicator
         name: replicator
