@@ -105,7 +105,7 @@ spec:
         stack: soveren
     spec:
       containers:
-      - image: soveren/detection-tool:v0.12.0
+      - image: soveren/detection-tool:v0.13.1
         imagePullPolicy: IfNotPresent
         name: detection-tool
         ports:
@@ -190,7 +190,7 @@ spec:
           value: "0"
         - name: SVRN_DIGGER_RESOLVER_KUBERNETES_ENABLED
           value: "true"
-        image: soveren/digger:v0.10.0
+        image: soveren/digger:v0.11.0
         imagePullPolicy: IfNotPresent
         name: digger
         ports:
