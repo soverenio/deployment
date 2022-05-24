@@ -105,7 +105,7 @@ spec:
         stack: soveren
     spec:
       containers:
-      - image: soveren/detection-tool:v0.13.1
+      - image: soveren/detection-tool:v0.13.2
         imagePullPolicy: IfNotPresent
         name: detection-tool
         ports:
