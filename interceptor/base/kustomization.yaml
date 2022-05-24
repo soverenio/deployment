@@ -1,0 +1,25 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+namespace: soveren-interceptor
+
+resources:
+- namespace.yaml
+- interceptor-sa-cr-crb.yaml
+- interceptor.yaml
+- kafka-deployment.yaml
+- detection-tool.yaml
+- digger-deployment.yaml
+- digger-sa-crb.yaml
+
+images:
+- name: soveren/interceptor
+  newTag: latest
+- name: soveren/digger
+  newTag: latest
+- name: soveren/detection-tool
+  newTag: v0.12.0
