@@ -4,17 +4,14 @@ kind: DaemonSet
 metadata:
   name: soveren-interceptor
   labels:
-    stack: soveren
     app: interceptor
 spec:
   selector:
     matchLabels:
-      stack: soveren
       app: interceptor
   template:
     metadata:
       labels:
-        stack: soveren
         app: interceptor
     spec:
       dnsPolicy: ClusterFirstWithHostNet
@@ -39,6 +36,12 @@ spec:
               value: "4000"
             - name: "SVRN_INTERCEPTOR_SOURCE_EXCLUDEDIFACE"
               value: "nflog,bluetooth-monitor,nfqueue,tunl0,ip6tnl0,lo,docker0,services1,eth0,cni0"
+            - name: "SVRN_INTERCEPTOR_SOURCE_FILTER_URLFILTER"
+              value: "/metrics,/healthz,/api/health,/api/v2/alive,/api/v2/detect"
+            - name: "SVRN_INTERCEPTOR_SOURCE_FILTER_RESPONSECODE"
+              value: "400"
+            - name: "SVRN_INTERCEPTOR_SOURCE_FILTER_REQUESTMETHOD"
+              value: "HEAD"
             - name: "SVRN_INTERCEPTOR_NAMESPACEEXPLORER_ENABLED"
               value: "false"
             - name: "SVRN_INTERCEPTOR_NAMESPACEEXPLORER_KUBERNETESNAMESPACE"
