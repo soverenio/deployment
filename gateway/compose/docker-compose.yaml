@@ -5,7 +5,7 @@ services:
     healthcheck:
       interval: 5s
       test: bash -c '</dev/tcp/localhost/8000' 2>/dev/null
-    image: soveren/detection-tool:v0.14.1
+    image: soveren/detection-tool:v0.15.9
   digger:
     depends_on:
       detection-tool:
@@ -18,6 +18,8 @@ services:
       SVRN_DIGGER_INSTRUMENTATION_TRACING_COLLECTORENDPOINT: ''
       SVRN_DIGGER_INSTRUMENTATION_TRACING_PROBABILITYRATE: '0'
       SVRN_DIGGER_LOG_LEVEL: info
+      SVRN_DIGGER_SAMPLER_ACTIVECLUSTERING_ENABLED: "true"
+      SVRN_DIGGER_SAMPLER_ENABLED: "true"
       SVRN_DIGGER_STATSCLIENT_CLIENT_ADDRESS: stats.soveren.io:443
       SVRN_DIGGER_STATSCLIENT_CLIENT_TIMEOUT: 60s
       SVRN_DIGGER_STATSCLIENT_CLIENT_USETLS: "true"
@@ -27,7 +29,7 @@ services:
     healthcheck:
       interval: 5s
       test: bash -c '</dev/tcp/localhost/9000' 2>/dev/null
-    image: soveren/digger:v0.12.0
+    image: soveren/digger:v0.13.1
   kafka:
     command:
       - --override

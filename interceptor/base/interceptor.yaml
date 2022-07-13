@@ -54,6 +54,8 @@ spec:
               value: "events"
             - name: "SVRN_INTERCEPTOR_PRODUCER_HEARTBEATTOPIC"
               value: "heartbeat"
+            - name: "SVRN_INTERCEPTOR_PRODUCER_SENDERQUEUEWORKERPOOLCOUNT"
+              value: "1"
           resources:
             limits:
               memory: 250Mi
