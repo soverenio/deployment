@@ -4,8 +4,9 @@ services:
       - '8000'
     healthcheck:
       interval: 5s
+      retries: 10
       test: bash -c '</dev/tcp/localhost/8000' 2>/dev/null
-    image: soveren/detection-tool:v0.15.9
+    image: soveren/detection-tool:v0.15.10
   digger:
     depends_on:
       detection-tool:
@@ -29,7 +30,7 @@ services:
     healthcheck:
       interval: 5s
       test: bash -c '</dev/tcp/localhost/9000' 2>/dev/null
-    image: soveren/digger:v0.13.1
+    image: soveren/digger:v0.13.2
   kafka:
     command:
       - --override
