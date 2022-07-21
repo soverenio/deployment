@@ -102,7 +102,7 @@ spec:
         stack: soveren
     spec:
       containers:
-      - image: soveren/detection-tool:v0.15.9
+      - image: soveren/detection-tool:v0.15.10
         imagePullPolicy: IfNotPresent
         name: detection-tool
         ports:
@@ -191,7 +191,7 @@ spec:
           value: "true"
         - name: SVRN_DIGGER_SAMPLER_ACTIVECLUSTERING_ENABLED
           value: "true"
-        image: soveren/digger:v0.13.1
+        image: soveren/digger:v0.13.2
         imagePullPolicy: IfNotPresent
         name: digger
         ports:
