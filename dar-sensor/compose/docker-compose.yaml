@@ -1,0 +1,50 @@
+version: "3"
+
+services:
+  crawler:
+    image: soveren/crawler:latest
+    expose:
+      - "9000"
+    environment:
+      SVRN_CRAWLER_LOG_LEVEL: ${SVRN_CRAWLER_LOG_LEVEL}
+      SVRN_CRAWLER_STATSCLIENT_TOKEN: ${SVRN_CRAWLER_STATSCLIENT_TOKEN}
+      SVRN_CRAWLER_STATSCLIENT_CLIENT_USETLS: "True"
+      SVRN_CRAWLER_STATSCLIENT_CLIENT_ADDRESS: "stats.soveren.io:443"
+      SVRN_CRAWLER_DETECTIONTOOL_URL: "http://detection-tool:8000"
+      SVRN_CRAWLER_KAFKA_BROKERS: "kafka:9092"
+      SVRN_CRAWLER_INSTRUMENTATION_LOGGER_ENABLED: ${SVRN_CRAWLER_INSTRUMENTATION_LOGGER_ENABLED}
+      SVRN_CRAWLER_CRAWL_S3: ${S3_CRAWL_STRING}
+      SVRN_CRAWLER_CRAWL_DATABASE_POSTGRES: ${DATABASE_POSTGRES_STRING}
+      SVRN_CRAWLER_CRAWL_KAFKA: ${KAFKA_STRING}
+    depends_on:
+      - detection-tool
+      - kafka
+
+  detection-tool:
+    image: soveren/detection-tool:latest
+    expose:
+      - "8000"
+    environment:
+      SVRN_DETECTION_TOOL_OTAREGISTRY_AUTH_TOKEN: ${SVRN_CRAWLER_STATSCLIENT_TOKEN}
+      SVRN_DETECTION_TOOL_OTAREGISTRY_CLIENT_ADDRESS: "updates.soveren.io:443"
+      SVRN_DETECTION_TOOL_DEBUG: "True"
+      SVRN_DETECTION_TOOL_UPDATE_CHECK_FREQ_SEC: 120
+    healthcheck:
+      test: "bash -c '</dev/tcp/localhost/8000' 2>/dev/null"
+      interval: "5s"
+      retries: 10
+
+  kafka:
+    image: soveren/kafka:2.13-3.5.1
+    command: [
+      "--override", "advertised.listeners=PLAINTEXT://kafka:9092",
+      "--override", "log.retention.hours=1",
+      "--override", "log.retention.bytes=268435456",
+      "--override", "auto.create.topics.enable=false",
+    ]
+    environment:
+      # Format: topic:partitions:replication-factor:cleanup.policy:retention.bytes
+      - KAFKA_CREATE_TOPICS=logs:1:1::104857600
+    healthcheck:
+      test: bash -c '</dev/tcp/kafka/9092' 2>/dev/null
+      interval: "15s"
