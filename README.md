@@ -51,6 +51,6 @@ DATABASE_POSTGRES_STRING="[{\"name\":\"DATABASE NAME\",\"connectionstring\":\"po
 
 ## Further reading
 
-The detailed documentation on using Soveren is available here: https://docs.soveren.io/en/stable/user-guide/overview/
+The detailed documentation on using Soveren is available here: https://docs.soveren.io/en/stable/user-guide/
 
 The release notes for the Soveren DAR Sensor is available here: https://github.com/soverenio/helm-charts/blob/master/charts/soveren-dar-sensor/release-notes.md
