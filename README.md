@@ -23,7 +23,7 @@ You should configure the sensor to connect to the data sources by providing spec
 
 Available configuration parameters are described here: https://docs.soveren.io/en/stable/administration/configuring-sensor/#s3-buckets. If you want to enable S3 buckets scanning, provide all necessary options as a JSON string without line breaks.
 
-Minimal example configuration is this:
+A minimal example configuration is:
 
 ```dotenv
 S3_CRAWL_STRING="[{\"accesskeyid\":\"\",\"secretaccesskey\":\"\"}]"
@@ -33,7 +33,7 @@ S3_CRAWL_STRING="[{\"accesskeyid\":\"\",\"secretaccesskey\":\"\"}]"
 
 Available configuration parameters are described here: https://docs.soveren.io/en/stable/administration/configuring-sensor/#kafka_1. If you want to enable Kafka scanning, provide all necessary options as a JSON string without line breaks.
 
-This is the minimal example configuration:
+A minimal example configuration is:
 
 ```dotenv
 KAFKA_STRING="[[{\"instancename\":\"KAFKA INSTANCE NAME\", \"brokers\":[\"\"],\"tls\":\"false\",\"tlsconfig\":{\"insecureskipverify\":\"true\"},\"sasl\":\"false\"}]]"
@@ -43,7 +43,7 @@ KAFKA_STRING="[[{\"instancename\":\"KAFKA INSTANCE NAME\", \"brokers\":[\"\"],\"
 
 Available configuration parameters are described here: https://docs.soveren.io/en/stable/administration/configuring-sensor/#databases. If you want to enable database scanning, provide all necessary options as a JSON string without line breaks.
 
-Example configuration is this:
+An example configuration is:
 
 ```dotenv
 DATABASE_POSTGRES_STRING="[{\"name\":\"DATABASE NAME\",\"connectionstring\":\"postgresql://user:password@netloc:port/dbname\"}]"
