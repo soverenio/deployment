@@ -48,3 +48,9 @@ An example configuration is:
 ```dotenv
 DATABASE_POSTGRES_STRING="[{\"name\":\"DATABASE NAME\",\"connectionstring\":\"postgresql://user:password@netloc:port/dbname\"}]"
 ```
+
+## Further reading
+
+The detailed documentation on using Soveren is available here: https://docs.soveren.io/en/stable/user-guide/overview/
+
+The release notes for the Soveren DAR Sensor is available here: https://github.com/soverenio/helm-charts/blob/master/charts/soveren-dar-sensor/release-notes.md
