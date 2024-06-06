@@ -1,4 +1,4 @@
-# Sovereign Data-at-Rest (DAR) Sensor: Docker Compose-based Deployment
+# Soveren Data-at-Rest (DAR) Sensor: Docker Compose-based Deployment
 
 ## Prerequisites
 
