@@ -2,9 +2,10 @@ version: "3"
 
 services:
   crawler:
-    image: soveren/crawler:latest
+    image: soveren/crawler:v0.6.2
     expose:
       - "9000"
+      - "9100"
     environment:
       SVRN_CRAWLER_LOG_LEVEL: ${SVRN_CRAWLER_LOG_LEVEL}
       SVRN_CRAWLER_STATSCLIENT_TOKEN: ${SVRN_CRAWLER_STATSCLIENT_TOKEN}
@@ -13,6 +14,7 @@ services:
       SVRN_CRAWLER_DETECTIONTOOL_URL: "http://detection-tool:8000"
       SVRN_CRAWLER_KAFKA_BROKERS: "kafka:9092"
       SVRN_CRAWLER_INSTRUMENTATION_LOGGER_ENABLED: ${SVRN_CRAWLER_INSTRUMENTATION_LOGGER_ENABLED}
+      SVRN_CRAWLER_INSTRUMENTATION_METRICSENDER_ENABLED: "true"
       SVRN_CRAWLER_CRAWL_S3: ${S3_CRAWL_STRING}
       SVRN_CRAWLER_CRAWL_DATABASE_POSTGRES: ${DATABASE_POSTGRES_STRING}
       SVRN_CRAWLER_CRAWL_KAFKA: ${KAFKA_STRING}
@@ -21,9 +23,10 @@ services:
       - kafka
 
   detection-tool:
-    image: soveren/detection-tool:latest
+    image: soveren/detection-tool:v2.11.4
     expose:
       - "8000"
+      - "9100"
     environment:
       SVRN_DETECTION_TOOL_OTAREGISTRY_AUTH_TOKEN: ${SVRN_CRAWLER_STATSCLIENT_TOKEN}
       SVRN_DETECTION_TOOL_OTAREGISTRY_CLIENT_ADDRESS: "updates.soveren.io:443"
@@ -48,3 +51,25 @@ services:
     healthcheck:
       test: bash -c '</dev/tcp/kafka/9092' 2>/dev/null
       interval: "15s"
+
+  kafka-exporter:
+    image: soveren/kafka-exporter:v1.7.0
+    expose:
+      - "9100"
+    command:
+      - --kafka.server=kafka:9092
+      - --web.listen-address=:9100
+    depends_on:
+      - kafka
+    links:
+      - kafka
+    restart: always
+
+  prometheus:
+    image: prom/prometheus:v2.37.0
+    volumes:
+      - ./config:/etc/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--web.enable-lifecycle'
+      - '--enable-feature=agent'
