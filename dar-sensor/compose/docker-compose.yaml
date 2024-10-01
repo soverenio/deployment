@@ -2,7 +2,7 @@ version: "3"
 
 services:
   crawler:
-    image: soveren/crawler:v0.6.2
+    image: soveren/crawler:v0.10.0
     expose:
       - "9000"
       - "9100"
@@ -23,7 +23,7 @@ services:
       - kafka
 
   detection-tool:
-    image: soveren/detection-tool:v2.11.4
+    image: soveren/detection-tool:v2.12.4
     expose:
       - "8000"
       - "9100"
