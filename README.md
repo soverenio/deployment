@@ -49,6 +49,14 @@ An example configuration is:
 DATABASE_POSTGRES_STRING="[{\"name\":\"DATABASE NAME\",\"connectionstring\":\"postgresql://user:password@netloc:port/dbname\"}]"
 ```
 
+## Run the sensor
+
+Start the sensor, e.g.:
+
+```shell
+docker compose -а docker-compose.yaml -d
+```
+
 ## Further reading
 
 The detailed documentation on using Soveren is available here: https://docs.soveren.io/en/stable/user-guide/
